@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+
+class SetLocale
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        // الحصول على اللغة من URL أو Session
+        $locale = $request->get('lang', session('locale', 'ar'));
+
+        // التحقق من صحة اللغة
+        if (!in_array($locale, ['ar', 'en', 'ku'])) {
+            $locale = 'ar';
+        }
+
+        // حفظ في Session
+        session(['locale' => $locale]);
+
+        // تعيين اللغة
+        App::setLocale($locale);
+
+        return $next($request);
+    }
+}

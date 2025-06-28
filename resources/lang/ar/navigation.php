@@ -1,0 +1,270 @@
+<?php
+
+return [
+    // العنوان الرئيسي
+    'system_name' => 'نظام المذاخر',
+    'pharmacy_system' => 'نظام إدارة الصيدلية',
+    
+    // القوائم الرئيسية
+    'dashboard' => 'الرئيسية',
+    'home' => 'الرئيسية',
+    'orders' => 'الطلبات',
+    'items' => 'المنتجات',
+    'products' => 'المنتجات',
+    'medicines' => 'الأدوية',
+    'warehouses' => 'المخازن',
+    'inventory' => 'المخزون',
+    'invoices' => 'الفواتير',
+    'collections' => 'التحصيلات',
+    'payments' => 'المدفوعات',
+    'suppliers' => 'الموردين',
+    'customers' => 'العملاء',
+    'users' => 'المستخدمين',
+    'employees' => 'الموظفين',
+    'permissions' => 'الصلاحيات والأدوار',
+    'roles' => 'الأدوار',
+    'returns' => 'المرتجعات',
+    'reports' => 'التقارير',
+    'analytics' => 'التحليلات',
+    'statistics' => 'الإحصائيات',
+    
+    // الأقسام المتخصصة
+    'hr' => 'الموارد البشرية',
+    'human_resources' => 'الموارد البشرية',
+    'finance' => 'المالية',
+    'accounting' => 'المحاسبة',
+    'regulatory_affairs' => 'الشؤون التنظيمية',
+    'medical_representatives' => 'المندوبين الطبيين',
+    'medical_reps' => 'المندوبين الطبيين',
+    'ai' => 'الذكاء الاصطناعي',
+    'artificial_intelligence' => 'الذكاء الاصطناعي',
+    'backup' => 'النسخ الاحتياطية',
+    'database_backup' => 'نسخ احتياطية لقاعدة البيانات',
+    'help' => 'مساعدة',
+    'help_center' => 'مركز المساعدة',
+    
+    // قوائم فرعية - الطلبات
+    'new_order' => 'طلب جديد',
+    'pending_orders' => 'الطلبات المعلقة',
+    'completed_orders' => 'الطلبات المكتملة',
+    'cancelled_orders' => 'الطلبات الملغية',
+    'order_history' => 'تاريخ الطلبات',
+    
+    // قوائم فرعية - المنتجات
+    'all_items' => 'جميع المنتجات',
+    'add_item' => 'إضافة منتج',
+    'low_stock' => 'مخزون منخفض',
+    'expired_items' => 'منتجات منتهية الصلاحية',
+    'item_categories' => 'فئات المنتجات',
+    'item_import' => 'استيراد المنتجات',
+    
+    // قوائم فرعية - المخازن
+    'all_warehouses' => 'جميع المخازن',
+    'add_warehouse' => 'إضافة مخزن',
+    'warehouse_transfers' => 'نقل البضائع',
+    'warehouse_reports' => 'تقارير المخازن',
+    'stock_movements' => 'حركات المخزون',
+    
+    // قوائم فرعية - الفواتير
+    'all_invoices' => 'جميع الفواتير',
+    'pending_invoices' => 'الفواتير المعلقة',
+    'paid_invoices' => 'الفواتير المدفوعة',
+    'overdue_invoices' => 'الفواتير المتأخرة',
+    'invoice_templates' => 'قوالب الفواتير',
+    
+    // قوائم فرعية - التحصيلات
+    'all_collections' => 'جميع التحصيلات',
+    'new_collection' => 'تحصيل جديد',
+    'cash_collections' => 'التحصيلات النقدية',
+    'bank_collections' => 'التحصيلات البنكية',
+    'collection_reports' => 'تقارير التحصيلات',
+    
+    // قوائم فرعية - الموردين
+    'all_suppliers' => 'جميع الموردين',
+    'add_supplier' => 'إضافة مورد',
+    'supplier_orders' => 'طلبات الموردين',
+    'supplier_payments' => 'مدفوعات الموردين',
+    'supplier_reports' => 'تقارير الموردين',
+    
+    // قوائم فرعية - العملاء
+    'all_customers' => 'جميع العملاء',
+    'add_customer' => 'إضافة عميل',
+    'customer_orders' => 'طلبات العملاء',
+    'customer_payments' => 'مدفوعات العملاء',
+    'customer_reports' => 'تقارير العملاء',
+    'customer_statements' => 'كشوفات العملاء',
+    
+    // قوائم فرعية - المستخدمين
+    'all_users' => 'جميع المستخدمين',
+    'add_user' => 'إضافة مستخدم',
+    'user_roles' => 'أدوار المستخدمين',
+    'user_permissions' => 'صلاحيات المستخدمين',
+    'user_activity' => 'نشاط المستخدمين',
+    
+    // قوائم فرعية - التقارير
+    'sales_reports' => 'تقارير المبيعات',
+    'financial_reports' => 'التقارير المالية',
+    'inventory_reports' => 'تقارير المخزون',
+    'customer_reports' => 'تقارير العملاء',
+    'supplier_reports' => 'تقارير الموردين',
+    'user_reports' => 'تقارير المستخدمين',
+    'system_reports' => 'تقارير النظام',
+    
+    // قوائم فرعية - الموارد البشرية
+    'hr_dashboard' => 'لوحة الموارد البشرية',
+    'employees_management' => 'إدارة الموظفين',
+    'departments' => 'الأقسام',
+    'attendance' => 'الحضور والانصراف',
+    'leaves' => 'الإجازات',
+    'payroll' => 'الرواتب',
+    'hr_reports' => 'تقارير الموارد البشرية',
+    
+    // قوائم فرعية - المالية
+    'finance_dashboard' => 'لوحة المالية',
+    'chart_of_accounts' => 'دليل الحسابات',
+    'journal_entries' => 'القيود اليومية',
+    'trial_balance' => 'ميزان المراجعة',
+    'balance_sheet' => 'الميزانية العمومية',
+    'income_statement' => 'قائمة الدخل',
+    'cash_flow' => 'التدفق النقدي',
+    'financial_periods' => 'الفترات المالية',
+    
+    // قوائم فرعية - الشؤون التنظيمية
+    'regulatory_dashboard' => 'لوحة الشؤون التنظيمية',
+    'company_registration' => 'تسجيل الشركات',
+    'product_registration' => 'تسجيل المنتجات',
+    'inspection_licenses' => 'تراخيص التفتيش',
+    'import_permits' => 'تصاريح الاستيراد',
+    'regulatory_documents' => 'المستندات التنظيمية',
+    
+    // قوائم فرعية - المندوبين الطبيين
+    'medical_rep_dashboard' => 'لوحة المندوبين الطبيين',
+    'representatives' => 'المندوبين',
+    'doctors' => 'الأطباء',
+    'visits' => 'الزيارات',
+    'medical_rep_reports' => 'تقارير المندوبين',
+    'doctor_management' => 'إدارة الأطباء',
+    'visit_scheduling' => 'جدولة الزيارات',
+    
+    // قوائم فرعية - الذكاء الاصطناعي
+    'ai_dashboard' => 'لوحة الذكاء الاصطناعي',
+    'sales_forecasting' => 'توقعات المبيعات',
+    'team_development' => 'تطوير الفريق',
+    'sales_development' => 'تطوير المبيعات',
+    'ai_chat' => 'محادثة ذكية',
+    'ai_analytics' => 'تحليلات ذكية',
+    
+    // عناصر التنقل العلوي
+    'profile' => 'الملف الشخصي',
+    'settings' => 'الإعدادات',
+    'help' => 'مساعدة',
+    'support' => 'الدعم',
+    'logout' => 'تسجيل الخروج',
+    'login' => 'تسجيل الدخول',
+    'register' => 'تسجيل جديد',
+    
+    // حالات وأوضاع
+    'active' => 'نشط',
+    'inactive' => 'غير نشط',
+    'pending' => 'معلق',
+    'completed' => 'مكتمل',
+    'cancelled' => 'ملغي',
+    'approved' => 'موافق عليه',
+    'rejected' => 'مرفوض',
+    'draft' => 'مسودة',
+    'published' => 'منشور',
+    
+    // إجراءات عامة
+    'view' => 'عرض',
+    'edit' => 'تعديل',
+    'delete' => 'حذف',
+    'add' => 'إضافة',
+    'create' => 'إنشاء',
+    'update' => 'تحديث',
+    'save' => 'حفظ',
+    'cancel' => 'إلغاء',
+    'submit' => 'إرسال',
+    'search' => 'بحث',
+    'filter' => 'تصفية',
+    'export' => 'تصدير',
+    'import' => 'استيراد',
+    'print' => 'طباعة',
+    'download' => 'تحميل',
+    'upload' => 'رفع',
+    
+    // رسائل عامة
+    'welcome' => 'مرحباً',
+    'goodbye' => 'وداعاً',
+    'thank_you' => 'شكراً لك',
+    'please_wait' => 'يرجى الانتظار',
+    'loading' => 'جاري التحميل',
+    'processing' => 'جاري المعالجة',
+    'success' => 'نجح',
+    'error' => 'خطأ',
+    'warning' => 'تحذير',
+    'info' => 'معلومات',
+    'confirm' => 'تأكيد',
+    'yes' => 'نعم',
+    'no' => 'لا',
+    'ok' => 'موافق',
+    
+    // وحدات القياس والعملات
+    'currency' => 'العملة',
+    'iqd' => 'دينار عراقي',
+    'usd' => 'دولار أمريكي',
+    'eur' => 'يورو',
+    'unit' => 'الوحدة',
+    'piece' => 'قطعة',
+    'box' => 'علبة',
+    'bottle' => 'زجاجة',
+    'pack' => 'عبوة',
+    'strip' => 'شريط',
+    'vial' => 'قارورة',
+    'tube' => 'أنبوب',
+    'sachet' => 'كيس',
+    'capsule' => 'كبسولة',
+    'tablet' => 'قرص',
+    'injection' => 'حقنة',
+    'syrup' => 'شراب',
+    'cream' => 'كريم',
+    'ointment' => 'مرهم',
+    'drops' => 'قطرة',
+    'spray' => 'بخاخ',
+    
+    // أيام الأسبوع
+    'monday' => 'الاثنين',
+    'tuesday' => 'الثلاثاء',
+    'wednesday' => 'الأربعاء',
+    'thursday' => 'الخميس',
+    'friday' => 'الجمعة',
+    'saturday' => 'السبت',
+    'sunday' => 'الأحد',
+    
+    // الشهور
+    'january' => 'يناير',
+    'february' => 'فبراير',
+    'march' => 'مارس',
+    'april' => 'أبريل',
+    'may' => 'مايو',
+    'june' => 'يونيو',
+    'july' => 'يوليو',
+    'august' => 'أغسطس',
+    'september' => 'سبتمبر',
+    'october' => 'أكتوبر',
+    'november' => 'نوفمبر',
+    'december' => 'ديسمبر',
+    
+    // فترات زمنية
+    'today' => 'اليوم',
+    'yesterday' => 'أمس',
+    'tomorrow' => 'غداً',
+    'this_week' => 'هذا الأسبوع',
+    'last_week' => 'الأسبوع الماضي',
+    'next_week' => 'الأسبوع القادم',
+    'this_month' => 'هذا الشهر',
+    'last_month' => 'الشهر الماضي',
+    'next_month' => 'الشهر القادم',
+    'this_year' => 'هذا العام',
+    'last_year' => 'العام الماضي',
+    'next_year' => 'العام القادم',
+];
