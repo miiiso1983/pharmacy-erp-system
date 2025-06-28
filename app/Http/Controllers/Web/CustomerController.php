@@ -29,7 +29,7 @@ class CustomerController extends Controller
                 'total_sales_this_month' => CustomerTransaction::where('transaction_type', 'sale')
                     ->whereMonth('transaction_date', now()->month)
                     ->sum('total_amount'),
-                'total_collections_this_month' => CustomerPayment::whereRaw("strftime('%m', payment_date) = ?", [sprintf('%02d', now()->month)])
+                'total_collections_this_month' => CustomerPayment::whereMonth('payment_date', now()->month)
                     ->sum('amount'),
             ];
 
@@ -123,12 +123,12 @@ class CustomerController extends Controller
                     'month_name' => Carbon::create(null, $month)->format('F'),
                     'sales' => $customer->transactions()
                         ->where('transaction_type', 'sale')
-                        ->whereRaw("strftime('%m', transaction_date) = ?", [sprintf('%02d', $month)])
-                        ->whereRaw("strftime('%Y', transaction_date) = ?", [now()->year])
+                        ->whereMonth('transaction_date', $month)
+                        ->whereYear('transaction_date', now()->year)
                         ->sum('total_amount'),
                     'payments' => $customer->payments()
-                        ->whereRaw("strftime('%m', payment_date) = ?", [sprintf('%02d', $month)])
-                        ->whereRaw("strftime('%Y', payment_date) = ?", [now()->year])
+                        ->whereMonth('payment_date', $month)
+                        ->whereYear('payment_date', now()->year)
                         ->sum('amount'),
                 ];
             }

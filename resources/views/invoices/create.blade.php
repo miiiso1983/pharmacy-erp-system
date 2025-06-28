@@ -69,20 +69,19 @@
                                     placeholder="{{ __('customers.select_customer') }}"
                                     required>
                                 <option value="">{{ __('customers.select_customer') }}</option>
-                                @foreach($customers as $customer)
-                                    <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}
-                                            data-customer-code="{{ $customer->customer_code }}"
-                                            data-customer-phone="{{ $customer->phone }}"
-                                            data-customer-email="{{ $customer->email }}">
-                                        {{ $customer->name }}
-                                        @if($customer->customer_code)
-                                            ({{ $customer->customer_code }})
-                                        @endif
-                                        @if($customer->phone)
-                                            - {{ $customer->phone }}
-                                        @endif
-                                    </option>
-                                @endforeach
+                                @if(old('customer_id'))
+                                    @php
+                                        $selectedCustomer = \App\Models\Customer::find(old('customer_id'));
+                                    @endphp
+                                    @if($selectedCustomer)
+                                        <option value="{{ $selectedCustomer->id }}" selected>
+                                            {{ $selectedCustomer->name }}
+                                            @if($selectedCustomer->customer_code)
+                                                ({{ $selectedCustomer->customer_code }})
+                                            @endif
+                                        </option>
+                                    @endif
+                                @endif
                             </select>
                             @error('customer_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -385,13 +384,81 @@ function addInvoiceItem() {
 
     // تفعيل Select2 للصنف الجديد
     setTimeout(() => {
-        if (window.PharmacySelect2) {
-            window.PharmacySelect2.init();
-        }
-
-        // إضافة event listener للصنف الجديد
         const newSelect = document.querySelector(`.item-select-${itemCounter}`);
-        if (newSelect) {
+        if (newSelect && !$(newSelect).hasClass('select2-hidden-accessible')) {
+            $(newSelect).select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'اختر الصنف...',
+                allowClear: true,
+                ajax: {
+                    url: '/api/search/items',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.results || []
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0,
+                templateResult: function(item) {
+                    if (item.loading) {
+                        return item.text;
+                    }
+
+                    if (!item.name) {
+                        return item.text;
+                    }
+
+                    var $container = $(
+                        '<div class="select2-result-item clearfix">' +
+                            '<div class="select2-result-item__title"></div>' +
+                            '<div class="select2-result-item__description"></div>' +
+                        '</div>'
+                    );
+
+                    $container.find('.select2-result-item__title').text(item.name);
+
+                    var description = '';
+                    if (item.code) {
+                        description += 'كود: ' + item.code;
+                    }
+                    if (item.price) {
+                        description += (description ? ' | ' : '') + 'سعر: ' + item.price + ' د.ع';
+                    }
+                    if (item.stock) {
+                        description += (description ? ' | ' : '') + 'مخزون: ' + item.stock;
+                    }
+
+                    if (description) {
+                        $container.find('.select2-result-item__description').text(description);
+                    }
+
+                    return $container;
+                },
+                templateSelection: function(item) {
+                    if (item.id === '') {
+                        return item.text;
+                    }
+
+                    var text = item.name || item.text;
+                    if (item.code) {
+                        text += ' (' + item.code + ')';
+                    }
+
+                    return text;
+                }
+            });
+
+            // إضافة event listener للصنف الجديد
             $(newSelect).on('select2:select', function(e) {
                 updateItemDetails(itemCounter);
             });
@@ -403,20 +470,80 @@ function addInvoiceItem() {
 document.addEventListener('DOMContentLoaded', function() {
     // انتظار تحميل جميع المكتبات
     setTimeout(() => {
-        // تفعيل Select2 للجميع
-        if (window.PharmacySelect2) {
-            window.PharmacySelect2.init();
-        }
+        // تفعيل Select2 للعملاء
+        $('#customer_id').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'اختر العميل...',
+            allowClear: true,
+            ajax: {
+                url: '/api/search/customers',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        search: params.term || '',
+                        page: params.page || 1
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.results || []
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 0,
+            templateResult: function(customer) {
+                if (customer.loading) {
+                    return customer.text;
+                }
 
-        // إضافة event listener للصف الافتراضي
-        const defaultSelect = document.querySelector('.item-select-1');
-        if (defaultSelect) {
-            $(defaultSelect).on('select2:select', function(e) {
-                updateItemDetails(1);
-            });
-        }
+                if (!customer.name) {
+                    return customer.text;
+                }
 
-        // تفعيل Select2 يدوياً للأصناف إذا لم يعمل تلقائياً
+                var $container = $(
+                    '<div class="select2-result-customer clearfix">' +
+                        '<div class="select2-result-customer__title"></div>' +
+                        '<div class="select2-result-customer__description"></div>' +
+                    '</div>'
+                );
+
+                $container.find('.select2-result-customer__title').text(customer.name);
+
+                var description = '';
+                if (customer.customer_code) {
+                    description += 'كود: ' + customer.customer_code;
+                }
+                if (customer.phone) {
+                    description += (description ? ' | ' : '') + 'هاتف: ' + customer.phone;
+                }
+                if (customer.email) {
+                    description += (description ? ' | ' : '') + 'إيميل: ' + customer.email;
+                }
+
+                if (description) {
+                    $container.find('.select2-result-customer__description').text(description);
+                }
+
+                return $container;
+            },
+            templateSelection: function(customer) {
+                if (customer.id === '') {
+                    return customer.text;
+                }
+
+                var text = customer.name || customer.text;
+                if (customer.customer_code) {
+                    text += ' (' + customer.customer_code + ')';
+                }
+
+                return text;
+            }
+        });
+
+        // تفعيل Select2 للأصناف
         $('.item-select').each(function() {
             if (!$(this).hasClass('select2-hidden-accessible')) {
                 $(this).select2({
@@ -441,10 +568,69 @@ document.addEventListener('DOMContentLoaded', function() {
                         },
                         cache: true
                     },
-                    minimumInputLength: 0
+                    minimumInputLength: 0,
+                    templateResult: function(item) {
+                        if (item.loading) {
+                            return item.text;
+                        }
+
+                        if (!item.name) {
+                            return item.text;
+                        }
+
+                        var $container = $(
+                            '<div class="select2-result-item clearfix">' +
+                                '<div class="select2-result-item__title"></div>' +
+                                '<div class="select2-result-item__description"></div>' +
+                            '</div>'
+                        );
+
+                        $container.find('.select2-result-item__title').text(item.name);
+
+                        var description = '';
+                        if (item.code) {
+                            description += 'كود: ' + item.code;
+                        }
+                        if (item.price) {
+                            description += (description ? ' | ' : '') + 'سعر: ' + item.price + ' د.ع';
+                        }
+                        if (item.stock) {
+                            description += (description ? ' | ' : '') + 'مخزون: ' + item.stock;
+                        }
+
+                        if (description) {
+                            $container.find('.select2-result-item__description').text(description);
+                        }
+
+                        return $container;
+                    },
+                    templateSelection: function(item) {
+                        if (item.id === '') {
+                            return item.text;
+                        }
+
+                        var text = item.name || item.text;
+                        if (item.code) {
+                            text += ' (' + item.code + ')';
+                        }
+
+                        return text;
+                    }
                 });
+
+                // إضافة event listener للصف الافتراضي
+                if ($(this).hasClass('item-select-1')) {
+                    $(this).on('select2:select', function(e) {
+                        updateItemDetails(1);
+                    });
+                }
             }
         });
+
+        // تفعيل Select2 العام إذا كان متاحاً
+        if (window.PharmacySelect2) {
+            window.PharmacySelect2.init();
+        }
     }, 1000);
 });
 
@@ -649,6 +835,61 @@ document.getElementById('invoiceForm').addEventListener('submit', function(e) {
 
 .item-net-price {
     background-color: #e9ecef !important;
+}
+
+/* تحسين مظهر Select2 */
+.select2-container--bootstrap-5 .select2-selection--single {
+    height: 38px !important;
+    padding: 6px 12px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 0.375rem !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 24px !important;
+    padding-left: 0 !important;
+    padding-right: 20px !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+    right: 3px !important;
+}
+
+.select2-result-customer__title,
+.select2-result-item__title {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.select2-result-customer__description,
+.select2-result-item__description {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.select2-container--bootstrap-5 .select2-results__option {
+    padding: 8px 12px;
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: #0d6efd;
+    color: white;
 }
 
 @media (max-width: 768px) {

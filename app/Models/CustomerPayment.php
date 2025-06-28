@@ -19,6 +19,7 @@ class CustomerPayment extends Model
         'payment_method',
         'reference_number',
         'notes',
+        'status',
         'received_by',
     ];
 
