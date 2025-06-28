@@ -58,6 +58,22 @@ class Customer extends Model
     }
 
     /**
+     * العلاقة مع الطلبات
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * العلاقة مع الفواتير
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * المعاملات غير المدفوعة
      */
     public function unpaidTransactions(): HasMany

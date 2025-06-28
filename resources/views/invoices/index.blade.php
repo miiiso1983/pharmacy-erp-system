@@ -33,10 +33,10 @@
                 الفواتير
             </h2>
             <div>
-                <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">
+                <a href="{{ route('invoices.create') }}" class="btn btn-success me-2" title="إنشاء فاتورة جديدة">
                     <i class="fas fa-plus me-2"></i>
-                    فاتورة جديدة
-                </button>
+                    إنشاء فاتورة جديدة
+                </a>
                 @can('view_invoices')
                     <a href="{{ route('invoices.pending') }}" class="btn btn-warning me-2">
                         <i class="fas fa-clock me-2"></i>
@@ -282,152 +282,8 @@
     </div>
 </div>
 
-<!-- Modal إنشاء فاتورة جديدة -->
-<div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-labelledby="createInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createInvoiceModalLabel">
-                    <i class="fas fa-plus me-2"></i>
-                    إنشاء فاتورة جديدة
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('invoices.store') }}" method="POST" id="createInvoiceForm">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <!-- معلومات الفاتورة الأساسية -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">معلومات الفاتورة</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="invoice_number" class="form-label">رقم الفاتورة <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="invoice_number" name="invoice_number"
-                                               placeholder="سيتم توليده تلقائياً" required>
-                                    </div>
+<!-- تم نقل إنشاء الفاتورة إلى صفحة منفصلة: {{ route('invoices.create') }} -->
 
-                                    <div class="mb-3">
-                                        <label for="customer_id" class="form-label">العميل <span class="text-danger">*</span></label>
-                                        <select class="form-select" id="customer_id" name="customer_id" required>
-                                            <option value="">اختر العميل</option>
-                                            @foreach(\App\Models\Customer::where('status', 'active')->get() as $customer)
-                                                <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="invoice_date" class="form-label">تاريخ الفاتورة <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="invoice_date" name="invoice_date"
-                                               value="{{ date('Y-m-d') }}" required>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="due_date" class="form-label">تاريخ الاستحقاق</label>
-                                        <input type="date" class="form-control" id="due_date" name="due_date"
-                                               value="{{ date('Y-m-d', strtotime('+30 days')) }}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ملخص الفاتورة -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">ملخص الفاتورة</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="subtotal" class="form-label">المجموع الفرعي</label>
-                                        <input type="number" class="form-control" id="subtotal" name="subtotal"
-                                               value="0" step="0.01" readonly>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="tax_amount" class="form-label">الضريبة</label>
-                                        <input type="number" class="form-control" id="tax_amount" name="tax_amount"
-                                               value="0" step="0.01" onchange="calculateInvoiceTotal()">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="discount_amount" class="form-label">خصم إضافي</label>
-                                        <input type="number" class="form-control" id="discount_amount" name="discount_amount"
-                                               value="0" step="0.01" onchange="calculateInvoiceTotal()">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="total_amount" class="form-label">المجموع الإجمالي</label>
-                                        <input type="number" class="form-control" id="total_amount" name="total_amount"
-                                               value="0" step="0.01" readonly>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- أصناف الفاتورة -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">أصناف الفاتورة</h6>
-                                    <button type="button" class="btn btn-sm btn-primary" onclick="addInvoiceItem()">
-                                        <i class="fas fa-plus me-1"></i>
-                                        إضافة صنف
-                                    </button>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" id="invoiceItemsTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th width="25%">الصنف</th>
-                                                    <th width="10%">الكمية</th>
-                                                    <th width="10%">مجاني</th>
-                                                    <th width="12%">السعر</th>
-                                                    <th width="10%">خصم %</th>
-                                                    <th width="12%">السعر الصافي</th>
-                                                    <th width="15%">المجموع</th>
-                                                    <th width="6%">إجراء</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="invoiceItemsBody">
-                                                <!-- سيتم إضافة الأصناف هنا ديناميكياً -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ملاحظات -->
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="mb-3">
-                                <label for="notes" class="form-label">ملاحظات</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3"
-                                          placeholder="ملاحظات إضافية للفاتورة..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save me-2"></i>
-                        حفظ الفاتورة
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('styles')
@@ -579,35 +435,7 @@ function calculateInvoiceTotal() {
     document.getElementById('total_amount').value = total.toFixed(2);
 }
 
-// إضافة صنف واحد افتراضي عند فتح Modal
-document.getElementById('createInvoiceModal').addEventListener('shown.bs.modal', function () {
-    if (document.getElementById('invoiceItemsBody').children.length === 0) {
-        addInvoiceItem();
-    }
-
-    // توليد رقم فاتورة جديد
-    generateInvoiceNumber();
-});
-
-function generateInvoiceNumber() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const randomNum = Math.floor(Math.random() * 999999) + 1;
-    const invoiceNumber = `INV-${year}-${randomNum.toString().padStart(6, '0')}`;
-    document.getElementById('invoice_number').value = invoiceNumber;
-}
-
-// تنظيف النموذج عند إغلاق Modal
-document.getElementById('createInvoiceModal').addEventListener('hidden.bs.modal', function () {
-    document.getElementById('createInvoiceForm').reset();
-    document.getElementById('invoiceItemsBody').innerHTML = '';
-    itemCounter = 0;
-    // إعادة تعيين القيم الافتراضية
-    document.getElementById('subtotal').value = '0.00';
-    document.getElementById('tax_amount').value = '0.00';
-    document.getElementById('discount_amount').value = '0.00';
-    document.getElementById('total_amount').value = '0.00';
-});
+// تم نقل إنشاء الفاتورة إلى صفحة منفصلة
 
 // التحقق من صحة النموذج قبل الإرسال
 document.getElementById('createInvoiceForm').addEventListener('submit', function(e) {
@@ -632,5 +460,7 @@ document.getElementById('createInvoiceForm').addEventListener('submit', function
         submitBtn.disabled = false;
     }, 10000);
 });
+
+// ملاحظة: تم نقل إنشاء الفاتورة إلى صفحة منفصلة {{ route('invoices.create') }}
 </script>
 @endpush

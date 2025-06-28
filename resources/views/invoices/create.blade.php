@@ -27,8 +27,8 @@
 <form action="{{ route('invoices.store') }}" method="POST" id="invoiceForm">
     @csrf
     
-    <div class="row">
-        <!-- معلومات الفاتورة الأساسية -->
+    <!-- معلومات الفاتورة الأساسية -->
+    <div class="row mb-4">
         <div class="col-lg-8">
             <div class="card mb-4">
                 <div class="card-header">
@@ -132,19 +132,10 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- عناصر الفاتورة -->
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-list me-2"></i>
-                        عناصر الفاتورة
-                    </h5>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="addInvoiceItem()">
-                        <i class="fas fa-plus me-2"></i>
-                        إضافة منتج
-                    </button>
-                </div>
+        </div>
+
+        <!-- ملخص الفاتورة -->
+        <div class="col-lg-4">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered" id="invoiceItemsTable">
@@ -309,6 +300,103 @@
             </div>
         </div>
     </div>
+
+    <!-- عناصر الفاتورة - عرض كامل -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        عناصر الفاتورة
+                    </h5>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addInvoiceItem()">
+                        <i class="fas fa-plus me-2"></i>
+                        إضافة منتج
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="invoiceItemsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="25%">الصنف</th>
+                                    <th width="10%">الكمية</th>
+                                    <th width="10%">مجاني</th>
+                                    <th width="15%">السعر</th>
+                                    <th width="10%">خصم %</th>
+                                    <th width="15%">السعر الصافي</th>
+                                    <th width="15%">المجموع</th>
+                                    <th width="8%">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoiceItemsBody">
+                                <!-- صف افتراضي لإضافة العناصر -->
+                                <tr id="item-row-1">
+                                    <td>
+                                        <select name="items[1][item_id]"
+                                                class="form-select item-select searchable-ajax item-select-1"
+                                                data-ajax-url="/api/search/items"
+                                                onchange="updateItemDetails(1)" required>
+                                            <option value="">اختر الصنف...</option>
+                                        </select>
+                                        <input type="hidden" name="items[1][description]"
+                                               class="item-description-1">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][quantity]"
+                                               class="form-control item-quantity"
+                                               min="1" value="1"
+                                               onchange="calculateItemTotal(1)" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][free_quantity]"
+                                               class="form-control item-free-quantity"
+                                               min="0" value="0"
+                                               onchange="calculateItemTotal(1)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][unit_price]"
+                                               class="form-control item-unit-price"
+                                               step="0.01" min="0" value="0"
+                                               onchange="calculateItemTotal(1)" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][discount_percentage]"
+                                               class="form-control item-discount-percentage"
+                                               step="0.01" min="0" max="100" value="0"
+                                               onchange="calculateItemTotal(1)">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][net_price]"
+                                               class="form-control item-net-price"
+                                               step="0.01" min="0" value="0" readonly>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="items[1][total]"
+                                               class="form-control item-total"
+                                               step="0.01" min="0" value="0" readonly>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="removeInvoiceItem(1)" title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- تنبيه عدم وجود عناصر -->
+                    <div id="noItemsAlert" class="alert alert-info text-center" style="display: none;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        انقر على "إضافة منتج" لبدء إضافة منتجات الفاتورة
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 @endsection
 
@@ -384,405 +472,13 @@ function addInvoiceItem() {
 
     // تفعيل Select2 للصنف الجديد
     setTimeout(() => {
-        const newSelect = document.querySelector(`.item-select-${itemCounter}`);
-        if (newSelect && !$(newSelect).hasClass('select2-hidden-accessible')) {
-            $(newSelect).select2({
-                theme: 'bootstrap-5',
-                width: '100%',
-                placeholder: 'اختر الصنف...',
-                allowClear: true,
-                ajax: {
-                    url: '/api/search/items',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search: params.term || '',
-                            page: params.page || 1
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data.results || []
-                        };
-                    },
-                    cache: true
-                },
-                minimumInputLength: 0,
-                templateResult: function(item) {
-                    if (item.loading) {
-                        return item.text;
-                    }
-
-                    if (!item.name) {
-                        return item.text;
-                    }
-
-                    var $container = $(
-                        '<div class="select2-result-item clearfix">' +
-                            '<div class="select2-result-item__title"></div>' +
-                            '<div class="select2-result-item__description"></div>' +
-                        '</div>'
-                    );
-
-                    $container.find('.select2-result-item__title').text(item.name);
-
-                    var description = '';
-                    if (item.code) {
-                        description += 'كود: ' + item.code;
-                    }
-                    if (item.price) {
-                        description += (description ? ' | ' : '') + 'سعر: ' + item.price + ' د.ع';
-                    }
-                    if (item.stock) {
-                        description += (description ? ' | ' : '') + 'مخزون: ' + item.stock;
-                    }
-
-                    if (description) {
-                        $container.find('.select2-result-item__description').text(description);
-                    }
-
-                    return $container;
-                },
-                templateSelection: function(item) {
-                    if (item.id === '') {
-                        return item.text;
-                    }
-
-                    var text = item.name || item.text;
-                    if (item.code) {
-                        text += ' (' + item.code + ')';
-                    }
-
-                    return text;
-                }
-            });
-
-            // إضافة event listener للصنف الجديد
-            $(newSelect).on('select2:select', function(e) {
-                updateItemDetails(itemCounter);
-            });
+        if (typeof window.reinitializeSelect2 === 'function') {
+            window.reinitializeSelect2();
         }
     }, 100);
 }
 
-// تفعيل Select2 للصف الافتراضي عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    // انتظار تحميل جميع المكتبات
-    setTimeout(() => {
-        // تفعيل Select2 للعملاء
-        $('#customer_id').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'اختر العميل...',
-            allowClear: true,
-            ajax: {
-                url: '/api/search/customers',
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        search: params.term || '',
-                        page: params.page || 1
-                    };
-                },
-                processResults: function(data) {
-                    return {
-                        results: data.results || []
-                    };
-                },
-                cache: true
-            },
-            minimumInputLength: 0,
-            templateResult: function(customer) {
-                if (customer.loading) {
-                    return customer.text;
-                }
-
-                if (!customer.name) {
-                    return customer.text;
-                }
-
-                var $container = $(
-                    '<div class="select2-result-customer clearfix">' +
-                        '<div class="select2-result-customer__title"></div>' +
-                        '<div class="select2-result-customer__description"></div>' +
-                    '</div>'
-                );
-
-                $container.find('.select2-result-customer__title').text(customer.name);
-
-                var description = '';
-                if (customer.customer_code) {
-                    description += 'كود: ' + customer.customer_code;
-                }
-                if (customer.phone) {
-                    description += (description ? ' | ' : '') + 'هاتف: ' + customer.phone;
-                }
-                if (customer.email) {
-                    description += (description ? ' | ' : '') + 'إيميل: ' + customer.email;
-                }
-
-                if (description) {
-                    $container.find('.select2-result-customer__description').text(description);
-                }
-
-                return $container;
-            },
-            templateSelection: function(customer) {
-                if (customer.id === '') {
-                    return customer.text;
-                }
-
-                var text = customer.name || customer.text;
-                if (customer.customer_code) {
-                    text += ' (' + customer.customer_code + ')';
-                }
-
-                return text;
-            }
-        });
-
-        // تفعيل Select2 للأصناف
-        $('.item-select').each(function() {
-            if (!$(this).hasClass('select2-hidden-accessible')) {
-                $(this).select2({
-                    theme: 'bootstrap-5',
-                    width: '100%',
-                    placeholder: 'اختر الصنف...',
-                    allowClear: true,
-                    ajax: {
-                        url: '/api/search/items',
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            return {
-                                search: params.term || '',
-                                page: params.page || 1
-                            };
-                        },
-                        processResults: function(data) {
-                            return {
-                                results: data.results || []
-                            };
-                        },
-                        cache: true
-                    },
-                    minimumInputLength: 0,
-                    templateResult: function(item) {
-                        if (item.loading) {
-                            return item.text;
-                        }
-
-                        if (!item.name) {
-                            return item.text;
-                        }
-
-                        var $container = $(
-                            '<div class="select2-result-item clearfix">' +
-                                '<div class="select2-result-item__title"></div>' +
-                                '<div class="select2-result-item__description"></div>' +
-                            '</div>'
-                        );
-
-                        $container.find('.select2-result-item__title').text(item.name);
-
-                        var description = '';
-                        if (item.code) {
-                            description += 'كود: ' + item.code;
-                        }
-                        if (item.price) {
-                            description += (description ? ' | ' : '') + 'سعر: ' + item.price + ' د.ع';
-                        }
-                        if (item.stock) {
-                            description += (description ? ' | ' : '') + 'مخزون: ' + item.stock;
-                        }
-
-                        if (description) {
-                            $container.find('.select2-result-item__description').text(description);
-                        }
-
-                        return $container;
-                    },
-                    templateSelection: function(item) {
-                        if (item.id === '') {
-                            return item.text;
-                        }
-
-                        var text = item.name || item.text;
-                        if (item.code) {
-                            text += ' (' + item.code + ')';
-                        }
-
-                        return text;
-                    }
-                });
-
-                // إضافة event listener للصف الافتراضي
-                if ($(this).hasClass('item-select-1')) {
-                    $(this).on('select2:select', function(e) {
-                        updateItemDetails(1);
-                    });
-                }
-            }
-        });
-
-        // تفعيل Select2 العام إذا كان متاحاً
-        if (window.PharmacySelect2) {
-            window.PharmacySelect2.init();
-        }
-    }, 1000);
-});
-
-// دالة لتحديث تفاصيل الصنف عند اختياره
-function updateItemDetails(itemCounter) {
-    const selectElement = document.querySelector(`select[name="items[${itemCounter}][item_id]"]`);
-
-    if (selectElement && selectElement.value) {
-        // الحصول على البيانات من Select2
-        const selectedData = $(selectElement).select2('data')[0];
-
-        if (selectedData) {
-            // تحديث وصف الصنف
-            const descriptionInput = document.querySelector(`.item-description-${itemCounter}`);
-            if (descriptionInput) {
-                descriptionInput.value = selectedData.name || selectedData.text;
-            }
-
-            // تحديث السعر
-            const priceInput = document.querySelector(`input[name="items[${itemCounter}][unit_price]"]`);
-            if (priceInput && selectedData.price) {
-                priceInput.value = selectedData.price;
-            }
-
-            // حساب المجموع
-            calculateItemTotal(itemCounter);
-        }
-    }
-}
-
-function removeInvoiceItem(itemId) {
-    const tbody = document.getElementById('invoiceItemsBody');
-    const row = document.getElementById(`item-row-${itemId}`);
-
-    if (row) {
-        // إذا كان هناك صف واحد فقط، امسح محتوياته بدلاً من حذفه
-        if (tbody.children.length === 1) {
-            // مسح جميع الحقول في الصف الأول
-            const selects = row.querySelectorAll('select');
-            const inputs = row.querySelectorAll('input');
-
-            selects.forEach(select => {
-                select.selectedIndex = 0;
-                if ($(select).hasClass('select2-hidden-accessible')) {
-                    $(select).val(null).trigger('change');
-                }
-            });
-
-            inputs.forEach(input => {
-                if (input.type === 'hidden') {
-                    input.value = '';
-                } else if (input.name && input.name.includes('quantity') && !input.name.includes('free')) {
-                    input.value = '1';
-                } else if (input.name && input.name.includes('discount_percentage')) {
-                    input.value = '0';
-                } else if (!input.readOnly) {
-                    input.value = '';
-                } else {
-                    input.value = '0';
-                }
-            });
-        } else {
-            // حذف الصف إذا كان هناك أكثر من صف
-            row.remove();
-        }
-
-        calculateSubtotal();
-
-        // إظهار تنبيه "لا توجد عناصر" إذا لم تعد هناك عناصر مملوءة
-        const hasItems = Array.from(tbody.querySelectorAll('select[name*="item_id"]')).some(select => select.value);
-        const noItemsAlert = document.getElementById('noItemsAlert');
-        if (!hasItems) {
-            noItemsAlert.style.display = 'block';
-        } else {
-            noItemsAlert.style.display = 'none';
-        }
-    }
-}
-
-function calculateItemTotal(itemId) {
-    const quantityInput = document.querySelector(`input[name="items[${itemId}][quantity]"]`);
-    const freeQuantityInput = document.querySelector(`input[name="items[${itemId}][free_quantity]"]`);
-    const unitPriceInput = document.querySelector(`input[name="items[${itemId}][unit_price]"]`);
-    const discountPercentageInput = document.querySelector(`input[name="items[${itemId}][discount_percentage]"]`);
-    const netPriceInput = document.querySelector(`input[name="items[${itemId}][net_price]"]`);
-    const totalInput = document.querySelector(`input[name="items[${itemId}][total]"]`);
-
-    const quantity = parseFloat(quantityInput.value) || 0;
-    const freeQuantity = parseFloat(freeQuantityInput.value) || 0;
-    const unitPrice = parseFloat(unitPriceInput.value) || 0;
-    const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
-
-    // حساب مبلغ الخصم
-    const discountAmount = (unitPrice * discountPercentage) / 100;
-
-    // حساب السعر الصافي بعد الخصم
-    const netPrice = unitPrice - discountAmount;
-    netPriceInput.value = netPrice.toFixed(2);
-
-    // حساب المجموع (الكمية المدفوعة فقط × السعر الصافي)
-    const total = quantity * netPrice;
-    totalInput.value = total.toFixed(2);
-
-    // تحديث معلومات إضافية في tooltip أو عرض
-    const totalQuantity = quantity + freeQuantity;
-    const freeValue = freeQuantity * unitPrice;
-
-    // إضافة tooltip للمعلومات الإضافية
-    totalInput.title = `الكمية الإجمالية: ${totalQuantity}\nقيمة المجاني: ${freeValue.toFixed(2)}\nقيمة الخصم: ${(quantity * discountAmount).toFixed(2)}`;
-
-    calculateSubtotal();
-}
-
-function calculateSubtotal() {
-    const totalInputs = document.querySelectorAll('.item-total');
-    let subtotal = 0;
-    
-    totalInputs.forEach(input => {
-        subtotal += parseFloat(input.value) || 0;
-    });
-    
-    document.getElementById('subtotal').value = subtotal.toFixed(2);
-    calculateTotal();
-}
-
-function calculateTotal() {
-    const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
-    const taxAmount = parseFloat(document.getElementById('tax_amount').value) || 0;
-    const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
-    
-    const total = subtotal + taxAmount - discountAmount;
-    
-    document.getElementById('total_amount').value = total.toFixed(2);
-    document.getElementById('totalAmountDisplay').textContent = 
-        new Intl.NumberFormat('ar-IQ').format(total) + ' {{ __("app.iqd") }}';
-}
-
-// إضافة منتج افتراضي عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    addInvoiceItem();
-});
-
-// التحقق من صحة النموذج قبل الإرسال
-document.getElementById('invoiceForm').addEventListener('submit', function(e) {
-    const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
-    
-    if (subtotal <= 0) {
-        e.preventDefault();
-        alert('يجب إضافة عناصر للفاتورة قبل الحفظ');
-        return false;
-    }
-});
+// جميع الدوال والـ Select2 موجودة في نهاية الملف
 </script>
 @endpush
 
@@ -892,6 +588,63 @@ document.getElementById('invoiceForm').addEventListener('submit', function(e) {
     color: white;
 }
 
+/* تحسين جدول العناصر */
+#invoiceItemsTable {
+    font-size: 14px;
+}
+
+#invoiceItemsTable th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    border: 1px solid #dee2e6;
+}
+
+#invoiceItemsTable td {
+    vertical-align: middle;
+    padding: 8px 6px;
+    border: 1px solid #dee2e6;
+}
+
+#invoiceItemsTable input,
+#invoiceItemsTable select {
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+#invoiceItemsTable .btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* تحسين عرض الأعمدة */
+#invoiceItemsTable .item-net-price,
+#invoiceItemsTable .item-total {
+    background-color: #e9ecef;
+    font-weight: 600;
+}
+
+/* تحسين الاستجابة */
+@media (max-width: 1200px) {
+    #invoiceItemsTable {
+        font-size: 12px;
+    }
+
+    #invoiceItemsTable th,
+    #invoiceItemsTable td {
+        padding: 6px 4px;
+    }
+
+    #invoiceItemsTable input,
+    #invoiceItemsTable select {
+        font-size: 11px;
+        padding: 4px 6px;
+    }
+}
+
 @media (max-width: 768px) {
     .sticky-top {
         position: relative;
@@ -903,4 +656,418 @@ document.getElementById('invoiceForm').addEventListener('submit', function(e) {
     }
 }
 </style>
+@endpush
+
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+@endpush
+
+@push('scripts')
+
+<script>
+// انتظار تحميل الصفحة بالكامل
+$(document).ready(function() {
+    console.log('🚀 تحميل صفحة إنشاء الفاتورة...');
+
+    // التأكد من تحميل jQuery و Select2
+    if (typeof $ === 'undefined') {
+        console.error('❌ jQuery غير محمل!');
+        alert('خطأ: jQuery غير محمل. يرجى إعادة تحميل الصفحة.');
+        return;
+    }
+
+    if (typeof $.fn.select2 === 'undefined') {
+        console.error('❌ Select2 غير محمل!');
+        alert('خطأ: Select2 غير محمل. يرجى إعادة تحميل الصفحة.');
+        return;
+    }
+
+    console.log('✅ jQuery و Select2 محملان بنجاح');
+
+    // تفعيل Select2 للعملاء
+    function initCustomerSelect() {
+        console.log('🔄 تفعيل Select2 للعملاء...');
+
+        var $customerSelect = $('#customer_id');
+
+        if ($customerSelect.length === 0) {
+            console.error('❌ عنصر customer_id غير موجود!');
+            return;
+        }
+
+        // تدمير Select2 السابق إذا كان موجوداً
+        if ($customerSelect.hasClass('select2-hidden-accessible')) {
+            $customerSelect.select2('destroy');
+        }
+
+        try {
+            $customerSelect.select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'ابحث عن العميل...',
+            allowClear: true,
+            ajax: {
+                url: '/api/search/customers',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        search: params.term || '',
+                        page: params.page || 1
+                    };
+                },
+                processResults: function(data) {
+                    console.log('نتائج البحث للعملاء:', data);
+                    return {
+                        results: data.results || []
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 0,
+            templateResult: function(customer) {
+                if (customer.loading) {
+                    return customer.text;
+                }
+
+                if (!customer.name && !customer.text) {
+                    return 'لا توجد نتائج';
+                }
+
+                var name = customer.name || customer.text;
+                var code = customer.customer_code || '';
+                var phone = customer.phone || '';
+                var email = customer.email || '';
+
+                var html = '<div class="select2-result-customer">';
+                html += '<div class="fw-bold">' + name + '</div>';
+
+                var details = [];
+                if (code) details.push('كود: ' + code);
+                if (phone) details.push('هاتف: ' + phone);
+                if (email) details.push('إيميل: ' + email);
+
+                if (details.length > 0) {
+                    html += '<div class="text-muted small">' + details.join(' | ') + '</div>';
+                }
+                html += '</div>';
+
+                return $(html);
+            },
+            templateSelection: function(customer) {
+                if (customer.id === '') {
+                    return customer.text || 'اختر العميل...';
+                }
+
+                var name = customer.name || customer.text;
+                var code = customer.customer_code || '';
+
+                return name + (code ? ' (' + code + ')' : '');
+            }
+        });
+
+        console.log('✅ تم تفعيل Select2 للعملاء');
+
+        } catch (error) {
+            console.error('❌ خطأ في تفعيل Select2 للعملاء:', error);
+        }
+    }
+
+    // تفعيل Select2 للأصناف
+    function initItemSelects() {
+        console.log('تفعيل Select2 للأصناف...');
+
+        $('.item-select').each(function() {
+            var $select = $(this);
+
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+
+            $select.select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'ابحث عن الصنف...',
+                allowClear: true,
+                ajax: {
+                    url: '/api/search/items',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function(data) {
+                        console.log('نتائج البحث للأصناف:', data);
+                        return {
+                            results: data.results || []
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0,
+                templateResult: function(item) {
+                    if (item.loading) {
+                        return item.text;
+                    }
+
+                    if (!item.name && !item.text) {
+                        return 'لا توجد نتائج';
+                    }
+
+                    var name = item.name || item.text;
+                    var code = item.code || '';
+                    var price = item.price || '';
+                    var stock = item.stock || item.stock_quantity || '';
+
+                    var html = '<div class="select2-result-item">';
+                    html += '<div class="fw-bold">' + name + '</div>';
+
+                    var details = [];
+                    if (code) details.push('كود: ' + code);
+                    if (price) details.push('سعر: ' + price + ' د.ع');
+                    if (stock) details.push('مخزون: ' + stock);
+
+                    if (details.length > 0) {
+                        html += '<div class="text-muted small">' + details.join(' | ') + '</div>';
+                    }
+                    html += '</div>';
+
+                    return $(html);
+                },
+                templateSelection: function(item) {
+                    if (item.id === '') {
+                        return item.text || 'اختر الصنف...';
+                    }
+
+                    var name = item.name || item.text;
+                    var code = item.code || '';
+
+                    return name + (code ? ' (' + code + ')' : '');
+                }
+            });
+
+            // إضافة event listener لتحديث تفاصيل الصنف
+            $select.on('select2:select', function(e) {
+                var data = e.params.data;
+                var rowNumber = $select.attr('class').match(/item-select-(\d+)/);
+                if (rowNumber && rowNumber[1]) {
+                    updateItemDetails(parseInt(rowNumber[1]));
+                }
+            });
+        });
+
+        console.log('تم تفعيل Select2 للأصناف');
+    }
+
+    // تفعيل Select2 عند تحميل الصفحة
+    setTimeout(function() {
+        initCustomerSelect();
+        initItemSelects();
+    }, 500);
+
+    // تفعيل إضافي للتأكد
+    setTimeout(function() {
+        // تفعيل بسيط للعملاء
+        if (!$('#customer_id').hasClass('select2-hidden-accessible')) {
+            $('#customer_id').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'ابحث عن العميل...',
+                allowClear: true,
+                ajax: {
+                    url: '/api/search/customers',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { search: params.term || '' };
+                    },
+                    processResults: function(data) {
+                        return { results: data.results || [] };
+                    }
+                }
+            });
+        }
+
+        // تفعيل بسيط للأصناف
+        $('.item-select').each(function() {
+            if (!$(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'ابحث عن الصنف...',
+                    allowClear: true,
+                    ajax: {
+                        url: '/api/search/items',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function(params) {
+                            return { search: params.term || '' };
+                        },
+                        processResults: function(data) {
+                            return { results: data.results || [] };
+                        }
+                    }
+                });
+            }
+        });
+
+        console.log('✅ تم تفعيل Select2 بنجاح');
+    }, 1500);
+
+    // إعادة تفعيل Select2 للصفوف الجديدة
+    window.reinitializeSelect2 = function() {
+        console.log('إعادة تفعيل Select2...');
+        initItemSelects();
+    };
+});
+
+// دالة لتحديث تفاصيل الصنف عند اختياره
+function updateItemDetails(itemCounter) {
+    const selectElement = document.querySelector(`select[name="items[${itemCounter}][item_id]"]`);
+    if (selectElement && selectElement.value) {
+        // الحصول على البيانات من Select2
+        const selectedData = $(selectElement).select2('data')[0];
+        if (selectedData) {
+            // تحديث وصف الصنف المخفي
+            const descriptionInput = document.querySelector(`.item-description-${itemCounter}`);
+            if (descriptionInput) {
+                descriptionInput.value = selectedData.name || selectedData.text;
+            }
+
+            // تحديث السعر
+            const priceInput = document.querySelector(`input[name="items[${itemCounter}][unit_price]"]`);
+            if (priceInput && selectedData.price) {
+                priceInput.value = selectedData.price;
+            }
+
+            // حساب المجموع
+            calculateItemTotal(itemCounter);
+        }
+    }
+}
+
+function removeInvoiceItem(itemId) {
+    const tbody = document.getElementById('invoiceItemsBody');
+    const row = document.getElementById(`item-row-${itemId}`);
+    if (row) {
+        // إذا كان هناك صف واحد فقط، امسح محتوياته بدلاً من حذفه
+        if (tbody.children.length === 1) {
+            // مسح جميع الحقول في الصف الأول
+            const selects = row.querySelectorAll('select');
+            const inputs = row.querySelectorAll('input');
+
+            selects.forEach(select => {
+                select.selectedIndex = 0;
+                if ($(select).hasClass('select2-hidden-accessible')) {
+                    $(select).val(null).trigger('change');
+                }
+            });
+
+            inputs.forEach(input => {
+                if (input.type === 'hidden') {
+                    input.value = '';
+                } else if (input.name && input.name.includes('quantity') && !input.name.includes('free')) {
+                    input.value = '1';
+                } else if (input.name && input.name.includes('discount_percentage')) {
+                    input.value = '0';
+                } else if (!input.readOnly) {
+                    input.value = '';
+                } else {
+                    input.value = '0';
+                }
+            });
+        } else {
+            // حذف الصف إذا كان هناك أكثر من صف
+            row.remove();
+        }
+
+        calculateSubtotal();
+
+        // إظهار تنبيه "لا توجد عناصر" إذا لم تعد هناك عناصر مملوءة
+        const hasItems = Array.from(tbody.querySelectorAll('select[name*="item_id"]')).some(select => select.value);
+        const noItemsAlert = document.getElementById('noItemsAlert');
+        if (!hasItems) {
+            noItemsAlert.style.display = 'block';
+        } else {
+            noItemsAlert.style.display = 'none';
+        }
+    }
+}
+
+function calculateItemTotal(itemId) {
+    const quantityInput = document.querySelector(`input[name="items[${itemId}][quantity]"]`);
+    const freeQuantityInput = document.querySelector(`input[name="items[${itemId}][free_quantity]"]`);
+    const unitPriceInput = document.querySelector(`input[name="items[${itemId}][unit_price]"]`);
+    const discountPercentageInput = document.querySelector(`input[name="items[${itemId}][discount_percentage]"]`);
+    const netPriceInput = document.querySelector(`input[name="items[${itemId}][net_price]"]`);
+    const totalInput = document.querySelector(`input[name="items[${itemId}][total]"]`);
+
+    const quantity = parseFloat(quantityInput.value) || 0;
+    const freeQuantity = parseFloat(freeQuantityInput.value) || 0;
+    const unitPrice = parseFloat(unitPriceInput.value) || 0;
+    const discountPercentage = parseFloat(discountPercentageInput.value) || 0;
+
+    // حساب مبلغ الخصم
+    const discountAmount = (unitPrice * discountPercentage) / 100;
+
+    // حساب السعر الصافي بعد الخصم
+    const netPrice = unitPrice - discountAmount;
+    netPriceInput.value = netPrice.toFixed(2);
+
+    // حساب المجموع (الكمية المدفوعة فقط × السعر الصافي)
+    const total = quantity * netPrice;
+    totalInput.value = total.toFixed(2);
+
+    // تحديث معلومات إضافية في tooltip أو عرض
+    const totalQuantity = quantity + freeQuantity;
+    const freeValue = freeQuantity * unitPrice;
+
+    // إضافة tooltip للمعلومات الإضافية
+    totalInput.title = `الكمية الإجمالية: ${totalQuantity}\nقيمة المجاني: ${freeValue.toFixed(2)}\nقيمة الخصم: ${(quantity * discountAmount).toFixed(2)}`;
+
+    calculateSubtotal();
+}
+
+function calculateSubtotal() {
+    const totalInputs = document.querySelectorAll('.item-total');
+    let subtotal = 0;
+
+    totalInputs.forEach(input => {
+        subtotal += parseFloat(input.value) || 0;
+    });
+
+    document.getElementById('subtotal').value = subtotal.toFixed(2);
+    calculateTotal();
+}
+
+function calculateTotal() {
+    const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+    const taxAmount = parseFloat(document.getElementById('tax_amount').value) || 0;
+    const discountAmount = parseFloat(document.getElementById('discount_amount').value) || 0;
+
+    const total = subtotal + taxAmount - discountAmount;
+
+    document.getElementById('total_amount').value = total.toFixed(2);
+    document.getElementById('totalAmountDisplay').textContent = new Intl.NumberFormat('ar-IQ').format(total) + ' دينار عراقي';
+}
+
+// التحقق من صحة النموذج قبل الإرسال
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('invoiceForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+            if (subtotal <= 0) {
+                e.preventDefault();
+                alert('يجب إضافة عناصر للفاتورة قبل الحفظ');
+                return false;
+            }
+        });
+    }
+});
+
+</script>
 @endpush
