@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ReturnOrder extends Model
+class ReturnOrder extends BaseModel
 {
     use HasFactory;
 

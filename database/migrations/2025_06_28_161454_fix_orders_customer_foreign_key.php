@@ -11,13 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            // حذف Foreign Key الخاطئ
-            $table->dropForeign(['customer_id']);
-
-            // إضافة Foreign Key الصحيح
-            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
-        });
+        //
     }
 
     /**
@@ -25,12 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            // حذف Foreign Key الصحيح
-            $table->dropForeign(['customer_id']);
-
-            // إعادة Foreign Key الخاطئ (للتراجع)
-            $table->foreign('customer_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        //
     }
 };

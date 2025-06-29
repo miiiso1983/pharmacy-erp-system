@@ -19,6 +19,31 @@ use App\Http\Controllers\Web\FinanceController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\RegulatoryAffairsController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ProjectManagerController;
+use App\Http\Controllers\LicenseVerificationController;
+use App\Http\Controllers\SystemSetupController;
+
+// إعادة توجيه الصفحة الرئيسية إلى صفحة الترخيص
+Route::get('/', function () {
+    return redirect()->route('license.verify');
+});
+
+// مجموعة routes الترخيص
+Route::prefix('license')->name('license.')->group(function () {
+    Route::get('/verify', [LicenseVerificationController::class, 'showLicenseForm'])->name('verify');
+    Route::post('/verify', [LicenseVerificationController::class, 'verifyLicense'])->name('verify.submit');
+    Route::get('/info', [LicenseVerificationController::class, 'showLicenseInfo'])->name('info');
+    Route::get('/deactivate', [LicenseVerificationController::class, 'deactivateLicense'])->name('deactivate');
+    Route::get('/search', [LicenseVerificationController::class, 'searchLicenses'])->name('search');
+});
+
+// مجموعة routes الإعداد الأولي
+Route::prefix('setup')->name('setup.')->group(function () {
+    Route::get('/initial', [SystemSetupController::class, 'showSetup'])->name('initial');
+    Route::post('/process', [SystemSetupController::class, 'processSetup'])->name('process');
+    Route::get('/reset-confirmation', [SystemSetupController::class, 'showResetConfirmation'])->name('reset.confirmation');
+});
 
 // مسارات تغيير اللغة
 Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
@@ -93,8 +118,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// مسارات محمية
-Route::middleware('auth')->group(function () {
+// مسارات محمية (تتطلب تسجيل دخول وترخيص صالح وعزل البيانات)
+Route::middleware(['auth', 'check.license', 'data_isolation'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -483,6 +508,33 @@ Route::middleware('auth')->group(function () {
         Route::post('/upload', [App\Http\Controllers\Web\BackupController::class, 'upload'])->name('upload');
     });
 
+    // مسارات مسح البيانات
+    Route::prefix('data')->name('data.')->group(function () {
+        Route::get('/cleanup', [App\Http\Controllers\DataCleanupController::class, 'showCleanupConfirmation'])->name('cleanup.confirm');
+        Route::post('/cleanup', [App\Http\Controllers\DataCleanupController::class, 'executeCleanup'])->name('cleanup.execute');
+    });
+
+    // مسارات Super Admin
+    Route::prefix('super-admin')->name('super-admin.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/licenses', [App\Http\Controllers\SuperAdminController::class, 'licenses'])->name('licenses');
+        Route::get('/users', [App\Http\Controllers\SuperAdminController::class, 'users'])->name('users');
+        Route::get('/admins', [App\Http\Controllers\SuperAdminController::class, 'admins'])->name('admins');
+        Route::get('/settings', [App\Http\Controllers\SuperAdminController::class, 'settings'])->name('settings');
+        Route::get('/reports', [App\Http\Controllers\SuperAdminController::class, 'reports'])->name('reports');
+        Route::post('/logout', [App\Http\Controllers\SuperAdminController::class, 'logout'])->name('logout');
+
+        // مسارات عزل البيانات
+        Route::prefix('data-isolation')->name('data-isolation.')->group(function () {
+            Route::get('/dashboard', [App\Http\Controllers\DataIsolationController::class, 'dashboard'])->name('dashboard');
+            Route::get('/validate', [App\Http\Controllers\DataIsolationController::class, 'validateIsolation'])->name('validate');
+            Route::post('/fix', [App\Http\Controllers\DataIsolationController::class, 'fix'])->name('fix');
+            Route::post('/cleanup', [App\Http\Controllers\DataIsolationController::class, 'cleanup'])->name('cleanup');
+            Route::post('/test', [App\Http\Controllers\DataIsolationController::class, 'test'])->name('test');
+            Route::get('/report', [App\Http\Controllers\DataIsolationController::class, 'report'])->name('report');
+        });
+    });
+
 });
 
 // مسارات المساعدة
@@ -849,4 +901,41 @@ Route::get('/api/advanced-reports/export-excel-test', function (Illuminate\Http\
     }
 });
 
+// صفحة اختبار لوحة التحكم الإدارية
+Route::get('/admin/test', function () {
+    return view('admin.test');
+})->name('admin.test');
 
+// مسارات لوحة التحكم الإدارية
+Route::middleware(['auth', 'check.license', 'data_isolation'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // إدارة المستخدمين
+    Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+    Route::get('/users/create', [AdminDashboardController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [AdminDashboardController::class, 'storeUser'])->name('users.store');
+    Route::post('/users/{user}/toggle-status', [AdminDashboardController::class, 'toggleUserStatus'])->name('users.toggle-status');
+
+    // إدارة التراخيص
+    Route::get('/licenses', [AdminDashboardController::class, 'licenses'])->name('licenses');
+    Route::get('/licenses/create', [AdminDashboardController::class, 'createLicense'])->name('licenses.create');
+
+    // إدارة المخازن
+    Route::get('/warehouses', [AdminDashboardController::class, 'warehouses'])->name('warehouses');
+
+    // التقارير
+    Route::get('/reports', [AdminDashboardController::class, 'reports'])->name('reports');
+});
+
+// مسارات مدير المشروع
+Route::middleware(['auth', 'check.license', 'data_isolation'])->prefix('project-manager')->name('project-manager.')->group(function () {
+    Route::get('/dashboard', [ProjectManagerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/warehouses', [ProjectManagerController::class, 'warehouses'])->name('warehouses');
+    Route::get('/warehouses/create', [ProjectManagerController::class, 'createWarehouse'])->name('warehouses.create');
+    Route::post('/warehouses', [ProjectManagerController::class, 'storeWarehouse'])->name('warehouses.store');
+    Route::get('/warehouses/{warehouse}', [ProjectManagerController::class, 'showWarehouse'])->name('warehouses.show');
+    Route::post('/warehouses/{warehouse}/extend', [ProjectManagerController::class, 'extendLicense'])->name('warehouses.extend');
+    Route::post('/warehouses/{warehouse}/suspend', [ProjectManagerController::class, 'suspendWarehouse'])->name('warehouses.suspend');
+    Route::post('/warehouses/{warehouse}/activate', [ProjectManagerController::class, 'activateWarehouse'])->name('warehouses.activate');
+    Route::delete('/warehouses/{warehouse}', [ProjectManagerController::class, 'deleteWarehouse'])->name('warehouses.delete');
+});

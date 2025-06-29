@@ -77,6 +77,12 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // التحقق من نوع المستخدم وتوجيهه للوحة التحكم المناسبة
+            if ($user->user_role === 'super_admin' || $user->email === 'master@pharmacy-system.com') {
+                return redirect()->route('super-admin.dashboard')
+                    ->with('success', "مرحباً بك Super Admin {$user->name}");
+            }
+
             return redirect()->intended(route('dashboard'))
                 ->with('success', "مرحباً بك {$user->name}");
         }

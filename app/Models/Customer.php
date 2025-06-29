@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Customer extends Model
+class Customer extends BaseModel
 {
     use HasFactory;
 
     protected $fillable = [
+        'license_id',
         'customer_code',
         'name',
         'business_name',
@@ -55,22 +55,6 @@ class Customer extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(CustomerPayment::class);
-    }
-
-    /**
-     * العلاقة مع الطلبات
-     */
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
-
-    /**
-     * العلاقة مع الفواتير
-     */
-    public function invoices(): HasMany
-    {
-        return $this->hasMany(Invoice::class);
     }
 
     /**

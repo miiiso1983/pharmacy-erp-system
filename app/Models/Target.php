@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Target extends Model
+class Target extends BaseModel
 {
     protected $fillable = [
         'medical_representative_id',

@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Warehouse extends Model
+class Warehouse extends BaseModel
 {
     use HasFactory;
 
@@ -23,11 +22,22 @@ class Warehouse extends Model
         'total_value',
         'total_items',
         'notes',
+        'license_id',
+        'location',
+        'manager_id',
+        'is_active',
+        'warehouse_type',
+        'capacity',
+        'contact_phone',
+        'contact_email',
+        'created_by',
     ];
 
     protected $casts = [
         'total_value' => 'decimal:2',
         'total_items' => 'integer',
+        'is_active' => 'boolean',
+        'capacity' => 'integer',
     ];
 
     // العلاقات
@@ -76,5 +86,23 @@ class Warehouse extends Model
         ];
 
         return $statuses[$this->status] ?? 'غير محدد';
+    }
+
+    // العلاقة مع الترخيص
+    public function license()
+    {
+        return $this->belongsTo(SystemLicense::class, 'license_id');
+    }
+
+    // العلاقة مع المدير
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    // العلاقة مع منشئ المخزن
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

@@ -205,3 +205,23 @@ jspm_packages/
 /storage/app/public/uploads
 /storage/debugbar
 cookies.txt
+
+# Backup files
+storage/app/backups/*
+!storage/app/backups/.gitkeep
+
+# License and sensitive data
+.env.production
+.env.staging
+config/database.production.php
+
+# Generated documentation
+docs/api/
+docs/coverage/
+
+# Local development files
+.php_cs.cache
+.phpunit.result.cache
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php

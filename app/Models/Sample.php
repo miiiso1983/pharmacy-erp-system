@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Sample extends Model
+class Sample extends BaseModel
 {
     protected $fillable = [
         'visit_id',

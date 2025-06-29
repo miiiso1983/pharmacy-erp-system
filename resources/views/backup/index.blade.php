@@ -125,6 +125,87 @@
     </div>
     @endif
 
+    <!-- أدوات مسح البيانات -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        أدوات مسح البيانات
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>تحذير:</strong> هذه الأدوات تحذف البيانات نهائياً. يُنصح بإنشاء نسخة احتياطية قبل الاستخدام.
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                <a href="{{ route('data.cleanup.confirm', ['type' => 'customers']) }}"
+                                   class="btn btn-outline-danger">
+                                    <i class="fas fa-users me-2"></i>
+                                    مسح العملاء
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                <a href="{{ route('data.cleanup.confirm', ['type' => 'products']) }}"
+                                   class="btn btn-outline-danger">
+                                    <i class="fas fa-pills me-2"></i>
+                                    مسح المنتجات
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                <a href="{{ route('data.cleanup.confirm', ['type' => 'orders']) }}"
+                                   class="btn btn-outline-danger">
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    مسح الطلبات
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="d-grid">
+                                <a href="{{ route('data.cleanup.confirm', ['type' => 'invoices']) }}"
+                                   class="btn btn-outline-danger">
+                                    <i class="fas fa-file-invoice me-2"></i>
+                                    مسح الفواتير
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-grid">
+                                <a href="{{ route('data.cleanup.confirm', ['type' => 'all']) }}"
+                                   class="btn btn-danger">
+                                    <i class="fas fa-trash-alt me-2"></i>
+                                    مسح جميع البيانات
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-success" id="createBackupBeforeCleanup">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    نسخة احتياطية + مسح
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- قائمة النسخ الاحتياطية -->
     <div class="row">
         <div class="col-12">
@@ -383,6 +464,25 @@
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-bottom: 1px solid #dee2e6;
         border-radius: 15px 15px 0 0 !important;
+    }
+
+    /* أزرار المسح */
+    .btn-outline-danger {
+        border-width: 2px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .card.border-warning {
+        border-width: 2px !important;
+    }
+
+    .card.border-warning .card-header {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
     }
 
     .table th {
@@ -653,6 +753,30 @@ $(document).ready(function() {
                 });
 
                 $('#uploadModal').modal('show');
+            }
+        });
+    });
+
+    // زر النسخة الاحتياطية + المسح
+    $('#createBackupBeforeCleanup').click(function() {
+        Swal.fire({
+            title: 'نسخة احتياطية + مسح',
+            text: 'سيتم إنشاء نسخة احتياطية أولاً ثم توجيهك لصفحة المسح',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'متابعة',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // إنشاء نسخة احتياطية أولاً
+                $('#createBackupBtn').click();
+
+                // توجيه لصفحة المسح بعد 3 ثوان
+                setTimeout(() => {
+                    window.location.href = "{{ route('data.cleanup.confirm', ['type' => 'all']) }}";
+                }, 3000);
             }
         });
     });

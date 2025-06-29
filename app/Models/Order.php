@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Order extends Model
+class Order extends BaseModel
 {
     use HasFactory;
 
@@ -35,7 +34,7 @@ class Order extends Model
     // العلاقات
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(User::class, 'customer_id');
     }
 
     public function createdBy()
